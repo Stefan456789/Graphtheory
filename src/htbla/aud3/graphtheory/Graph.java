@@ -68,8 +68,10 @@ public class Graph {
         });
         graph.get(sourceNodeId).distanceFromSource = 0;
         recursiveLabel(sourceNodeId, targetNodeId);
-        var x = recursivePathBuilding(sourceNodeId, graph.get(targetNodeId), new ArrayList<>(), null);
-        return new Path(x.stream().map(graph::get).toArray(Node[]::new));
+        var pathNodeIds = recursivePathBuilding(sourceNodeId, graph.get(targetNodeId), new ArrayList<>(), null);
+        Collections.reverse(pathNodeIds);
+        pathNodeIds.add(targetNodeId);
+        return new Path(pathNodeIds.stream().map(graph::get).toArray(Node[]::new));
     }
 
     private void recursiveLabel(int sourceNodeId, int targetNodeId) {
@@ -102,7 +104,7 @@ public class Graph {
         if (nextShortesedNode == null)
             return presentPath;
         presentPath.add(nextShortesedNode.nodeId);
-        presentPath.addAll(recursivePathBuilding(sourceNodeId, nextShortesedNode, presentPath, targetNode));
+        recursivePathBuilding(sourceNodeId, nextShortesedNode, presentPath, targetNode);
         return presentPath;
     }
 
