@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class Path {
 
 
-    final List<Node> path;
+     List<Node> path;
 
     public Path(Node... nodes) {
         path = new ArrayList<>();
@@ -39,12 +39,14 @@ public class Path {
      * @return Path's weight
      */
     public double computeWeight() {
-
-        return -2.0;
+        return path.stream().mapToDouble(node -> node.distanceFromSource).max().orElse(-1);
     }
 
     public List<Node> getNodes() {
         return path;
     }
 
+    public void setPath(List<Node> path) {
+        this.path = path;
+    }
 }

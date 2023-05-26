@@ -133,14 +133,18 @@ public class Graph {
 
         for (int id : viaNodeIds) {
             targetViaNode = id;
-            path = determineShortestPath(sourceNode, targetNodeId);
+            path = determineShortestPath(sourceNode, targetViaNode);
+            List<Node> path2 = path.getNodes();
+            path2.remove(path2.size() - 1);
+            path.setPath(path2);
             paths.add(path);
+
             sourceNode = targetViaNode;
         }
 
         path = determineShortestPath(viaNodeIds[viaNodeIds.length - 1], targetNodeId);
         paths.add(path);
-        Node[] pathNodes = (Node[]) paths.stream().flatMap(p -> p.getNodes().stream()).toArray();
+        Node[] pathNodes = paths.stream().flatMap(p -> p.getNodes().stream()).toArray(Node[]::new);
 
         return new Path(pathNodes);
     }
