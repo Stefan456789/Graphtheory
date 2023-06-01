@@ -15,6 +15,9 @@ public class Main {
         Graph graph = new Graph();
         graph.read(new File("Linz_Flussproblem.csv"));
         System.out.println(graph.determineMaximumFlow(1,40));
+
+        var test = graph.determineShortestPath(1,55).getEdges();
+        System.out.println();
         //test.getNodes().stream().map(n -> n.nodeId).forEach(System.out::println);
     }
 }
