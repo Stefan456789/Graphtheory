@@ -39,8 +39,14 @@ public class Path {
      * @return Path's weight
      */
     public double computeWeight() {
+        if (path.size() == 0) {
+            return -1;
+        }
         int weight = 0;
         for (int i = 0; i+1 < path.size(); i++) {
+            if (path.get(i +1) == path.get(i)){
+                continue;
+            }
             var nextEdges = path.get(i).outgoingEdges;
             int finalI = i;
             weight += nextEdges.stream().filter(edge -> edge.to() == path.get(finalI +1)).mapToInt(Edge::getWeight).findAny().orElse(0);

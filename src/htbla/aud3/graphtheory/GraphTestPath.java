@@ -78,13 +78,13 @@ public class GraphTestPath {
 
         Path path;
 
-//        path = g.determineShortestPath(48, 48);
-//        assertEquals(0.0, path.computeWeight(), 0.1);
-//        assertArrayEquals(new int[]{48, 48}, path.getNodeIds());
-//
-//        path = g.determineShortestPath(1, 55);
-//        assertEquals(-1.0, path.computeWeight(), 0.1);
-//        assertArrayEquals(new int[]{}, path.getNodeIds());
+        path = g.determineShortestPath(48, 48);
+        assertEquals(0.0, path.computeWeight(), 0.1);
+        assertArrayEquals(new int[]{48, 48}, path.getNodeIds());
+
+        path = g.determineShortestPath(1, 55);
+        assertEquals(-1.0, path.computeWeight(), 0.1);
+        assertArrayEquals(new int[]{}, path.getNodeIds());
 
         path = g.determineShortestPath(1, 2, 30);
         assertEquals(1290.0, path.computeWeight(), 0.1);
