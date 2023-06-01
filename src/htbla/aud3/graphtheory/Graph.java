@@ -158,7 +158,46 @@ public class Graph {
     }
 
     public Path determineMaximumFlowPath(int sourceNodeId, int targetNodeId) {
-        return null;
+        if (sourceNodeId == targetNodeId){
+            Node node = graph.get(sourceNodeId);
+            node.bottleNeck = 0;
+            return new Path(node, node);
+        }
+
+        graph.values().forEach((path) -> {
+            path.visited = false;
+            path.outgoingEdges.forEach((edge) -> {
+                edge.valid = true;
+            });
+        });
+        recursiveLabelFlowPath(sourceNodeId, targetNodeId);
+        var pathNodeIds = recursivePathBuilding(sourceNodeId, graph.get(targetNodeId), new ArrayList<>(), null);//TODO: Validate if old methode is still working for new calculations
+        Collections.reverse(pathNodeIds);
+        pathNodeIds.add(targetNodeId);
+        if (pathNodeIds.size() < 2)
+            return new Path();
+
+        return new Path(pathNodeIds.stream().map(graph::get).toArray(Node[]::new));
+    }
+
+    private void recursiveLabelFlowPath(int sourceNodeId, int targetNodeId) {
+        Node current = graph.get(sourceNodeId);
+        if (sourceNodeId == targetNodeId)
+            return;
+        for (Edge e : current.outgoingEdges) {
+            if (!e.valid)
+                return;
+
+            int bottleneck = Math.min(e.getWeight(), current.bottleNeck);
+            if (e.to().bottleNeck > bottleneck)
+                e.to().bottleNeck = bottleneck;
+            else e.valid = false;
+        }
+        current.visited = true;
+        graph.values().stream()
+                .filter(n -> !n.visited)
+                .max(Comparator.comparingInt(n -> n.bottleNeck))
+                .ifPresent((node) -> recursiveLabel(node.nodeId, targetNodeId));
     }
 
     /**

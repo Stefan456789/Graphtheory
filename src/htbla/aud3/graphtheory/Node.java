@@ -11,6 +11,7 @@ public class Node {
     final List<Edge> incomingEdges;
     final int nodeId;
     int distanceFromSource = Integer.MAX_VALUE;
+    int bottleNeck = 0;
 
     boolean visited = false;
 
