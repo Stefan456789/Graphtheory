@@ -209,6 +209,11 @@ public class Graph {
      * @return Maximum flow
      */
     public double determineMaximumFlow(int sourceNodeId, int targetNodeId) {
+        Path path = determineMaximumFlowPath(sourceNodeId, targetNodeId);
+        List<Edge> edges = path.getEdges();
+        int maxFlow = edges.stream().mapToInt(Edge::getWeight).min().orElse(0);
+        //TODO substract maxFlow from all edges
+
         return -1.0;
     }
     /**

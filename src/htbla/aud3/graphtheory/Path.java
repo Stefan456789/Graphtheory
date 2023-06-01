@@ -57,4 +57,14 @@ public class Path {
     public void setPath(List<Node> path) {
         this.path = path;
     }
+
+    public List<Edge> getEdges(){
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i+1 < path.size(); i++) {
+            var nextEdges = path.get(i).outgoingEdges;
+            int finalI = i;
+            edges.add(nextEdges.stream().filter(edge -> edge.to() == path.get(finalI +1)).findAny().orElse(null));
+        }
+        return edges;
+    }
 }
