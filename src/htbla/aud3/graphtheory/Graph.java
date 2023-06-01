@@ -157,6 +157,10 @@ public class Graph {
         return new Path(pathNodes);
     }
 
+    public Path determineMaximumFlowPath(int sourceNodeId, int targetNodeId) {
+        return null;
+    }
+
     /**
      * Determines the maximum flow between source nodeId and target nodeId. The maximum
      * flow is defined as the maximum weight sum of all possible paths.
