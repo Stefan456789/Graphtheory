@@ -58,9 +58,12 @@ public class Graph {
      * @return Shortest path
      */
     public Path determineShortestPath(int sourceNodeId, int targetNodeId) {
+        if (sourceNodeId == targetNodeId){
+            Node node = graph.get(sourceNodeId);
+            node.distanceFromSource = 0;
+            return new Path(node, node);
+        }
 
-        if (sourceNodeId == targetNodeId)
-            return new Path(graph.get(sourceNodeId), graph.get(sourceNodeId));
         graph.values().forEach((path) -> {
             path.visited = false;
             path.distanceFromSource = Integer.MAX_VALUE;
@@ -73,9 +76,9 @@ public class Graph {
         var pathNodeIds = recursivePathBuilding(sourceNodeId, graph.get(targetNodeId), new ArrayList<>(), null);
         Collections.reverse(pathNodeIds);
         pathNodeIds.add(targetNodeId);
-
-        if (sourceNodeId == targetNodeId)
+        if (pathNodeIds.size() < 2)
             return new Path();
+
         return new Path(pathNodeIds.stream().map(graph::get).toArray(Node[]::new));
     }
 

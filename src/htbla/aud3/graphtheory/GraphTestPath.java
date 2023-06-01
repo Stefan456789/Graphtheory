@@ -89,7 +89,6 @@ public class GraphTestPath {
         path = g.determineShortestPath(1, 2, 30);
         assertEquals(1290.0, path.computeWeight(), 0.1);
         assertArrayEquals(new int[]{1, 29, 30, 31, 2}, path.getNodeIds());
-
     }
 
     private File getFile(String fileName) {
