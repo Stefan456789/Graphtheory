@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Jakob Wintersteiger, Stefan Wiesinger
@@ -160,44 +161,76 @@ public class Graph {
     public Path determineMaximumFlowPath(int sourceNodeId, int targetNodeId) {
         if (sourceNodeId == targetNodeId){
             Node node = graph.get(sourceNodeId);
-            node.bottleNeck = 0;
             return new Path(node, node);
         }
 
         graph.values().forEach((path) -> {
             path.visited = false;
+            path.bottleNeck = -1;
+            path.distanceFromSource = Integer.MAX_VALUE;
             path.outgoingEdges.forEach((edge) -> {
                 edge.valid = true;
             });
         });
-        recursiveLabelFlowPath(sourceNodeId, targetNodeId);
-        var pathNodeIds = recursivePathBuilding(sourceNodeId, graph.get(targetNodeId), new ArrayList<>(), null);//TODO: Validate if old methode is still working for new calculations
+        graph.get(sourceNodeId).distanceFromSource = 0;
+        graph.get(sourceNodeId).bottleNeck = Integer.MAX_VALUE;
+        recursiveLabelFlowPath(sourceNodeId, targetNodeId, 0);
+        var pathNodeIds = recursiveFlowPathBuilding(sourceNodeId, graph.get(targetNodeId), new ArrayList<>(), null);//TODO: Validate if old methode is still working for new calculations - Spoiler it is not
         Collections.reverse(pathNodeIds);
         pathNodeIds.add(targetNodeId);
-        if (pathNodeIds.size() < 2)
+        if (pathNodeIds.size() < 2 || pathNodeIds.stream().distinct().toList().size() != pathNodeIds.size())
             return new Path();
 
         return new Path(pathNodeIds.stream().map(graph::get).toArray(Node[]::new));
     }
 
-    private void recursiveLabelFlowPath(int sourceNodeId, int targetNodeId) {
+    private List<Integer> recursiveFlowPathBuilding(int sourceNodeId, Node targetNode, List<Integer> presentPath, Node lastNode) {
+        if (sourceNodeId == targetNode.nodeId){
+            return presentPath;
+        }
+        Node nextMaxBottleneck = targetNode.incomingEdges.stream()
+                .filter(edge -> edge.valid)
+                .filter(edge -> edge.getWeight() > 0)
+                .map(Edge::from)
+                .max(Comparator.comparingInt(n -> n.bottleNeck)).orElse(null);
+        if (nextMaxBottleneck == null)
+            return presentPath;
+        Node finalNextMaxBottleneck = nextMaxBottleneck;
+        nextMaxBottleneck = targetNode.incomingEdges.stream()
+                .filter(edge -> edge.valid && edge.from().bottleNeck == finalNextMaxBottleneck.bottleNeck)
+                .filter(edge -> edge.getWeight() > 0)
+                .map(Edge::from)
+                .min(Comparator.comparingInt(n -> n.distanceFromSource)).orElse(null);
+        if (nextMaxBottleneck == null)
+            return presentPath;
+        if (presentPath.contains(nextMaxBottleneck.nodeId))
+            return new ArrayList<>();
+        presentPath.add(nextMaxBottleneck.nodeId);
+        recursiveFlowPathBuilding(sourceNodeId, nextMaxBottleneck, presentPath, targetNode);
+        return presentPath;
+    }
+
+    private void recursiveLabelFlowPath(int sourceNodeId, int targetNodeId, int distanceFromSource) {
         Node current = graph.get(sourceNodeId);
+        current.distanceFromSource = distanceFromSource;
         if (sourceNodeId == targetNodeId)
             return;
         for (Edge e : current.outgoingEdges) {
             if (!e.valid)
                 return;
 
-            int bottleneck = Math.min(e.getWeight(), current.bottleNeck);
-            if (e.to().bottleNeck > bottleneck)
+            int bottleneck = Math.min(e.getWeight(), current.bottleNeck); // Setze alle visited incoming Nodes deren min bottleneck kleiner als current zu invalid && bei Pathbuilding gehe ich nur zu valid und visited.
+            if (e.to().bottleNeck < bottleneck){
+                e.to().incomingEdges.stream().filter(edge -> edge.from().visited && edge.from().nodeId != sourceNodeId).forEach(edge -> edge.valid = false);
                 e.to().bottleNeck = bottleneck;
+            }
             else e.valid = false;
         }
         current.visited = true;
         graph.values().stream()
                 .filter(n -> !n.visited)
                 .max(Comparator.comparingInt(n -> n.bottleNeck))
-                .ifPresent((node) -> recursiveLabel(node.nodeId, targetNodeId));
+                .ifPresent((node) -> recursiveLabelFlowPath(node.nodeId, targetNodeId, distanceFromSource + 1));
     }
 
     /**
@@ -209,12 +242,20 @@ public class Graph {
      * @return Maximum flow
      */
     public double determineMaximumFlow(int sourceNodeId, int targetNodeId) {
-        Path path = determineMaximumFlowPath(sourceNodeId, targetNodeId);
-        List<Edge> edges = path.getEdges();
-        int maxFlow = edges.stream().mapToInt(Edge::getWeight).min().orElse(0);
-        //TODO substract maxFlow from all edges
+        int maxFlow = 0;
+        while(true){
+            Path path = determineMaximumFlowPath(sourceNodeId, targetNodeId);
+            List<Edge> edges = path.getEdges();
+            if (edges.stream().noneMatch(Objects::nonNull))
+                break;
+            int currentFlow = edges.stream().mapToInt(Edge::getWeight).min().orElse(0);
+            edges.forEach(edge -> edge.setWeight(edge.getWeight() - currentFlow));
+            if (currentFlow <= 0)
+                break;
+            maxFlow += currentFlow;
+        }
 
-        return -1.0;
+        return maxFlow;
     }
     /**
      * Determines all edges that are used by the maximum flow and have a capacity of zero
@@ -226,7 +267,19 @@ public class Graph {
      * @return List of edges with no capacity left
      */
     public List<Edge> determineBottlenecks(int sourceNodeId, int targetNodeId) {
-        return new ArrayList<>();
+        List<Edge> usedEdges = new ArrayList<>();
+        while(true){
+            Path path = determineMaximumFlowPath(sourceNodeId, targetNodeId);
+            List<Edge> edges = path.getEdges();
+            usedEdges.addAll(edges);
+            if (edges.stream().noneMatch(Objects::nonNull))
+                break;
+            int currentFlow = edges.stream().mapToInt(Edge::getWeight).min().orElse(0);
+            edges.forEach(edge -> edge.setWeight(0));
+            if (currentFlow <= 0)
+                break;
+        }
+        return usedEdges;
     }
 
 }

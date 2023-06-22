@@ -9,7 +9,7 @@ import java.util.List;
 public class Node {
     final List<Edge> outgoingEdges;
     final List<Edge> incomingEdges;
-    final int nodeId;
+    public final int nodeId;
     int distanceFromSource = Integer.MAX_VALUE;
     int bottleNeck = 0;
 
