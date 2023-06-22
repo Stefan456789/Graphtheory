@@ -269,12 +269,13 @@ public class Graph {
      */
     public List<Edge> determineBottlenecks(int sourceNodeId, int targetNodeId) {
         List<Edge> usedEdges = new ArrayList<>();
+        graph.forEach((id, node) -> node.outgoingEdges.forEach(Edge::resetWeight));
         while(true){
             Path path = determineMaximumFlowPath(sourceNodeId, targetNodeId);
             List<Edge> edges = path.getEdges();
-            usedEdges.addAll(edges);
             if (edges.stream().noneMatch(Objects::nonNull))
                 break;
+            usedEdges.addAll(edges);
             int currentFlow = edges.stream().mapToInt(Edge::getWeight).min().orElse(0);
             edges.forEach(edge -> edge.setWeight(edge.getWeight() - currentFlow));
             if (currentFlow <= 0)
