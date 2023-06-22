@@ -243,6 +243,7 @@ public class Graph {
      */
     public double determineMaximumFlow(int sourceNodeId, int targetNodeId) {
         int maxFlow = 0;
+        graph.forEach((id, node) -> node.outgoingEdges.forEach(Edge::resetWeight));
         while(true){
             Path path = determineMaximumFlowPath(sourceNodeId, targetNodeId);
             List<Edge> edges = path.getEdges();
@@ -275,7 +276,7 @@ public class Graph {
             if (edges.stream().noneMatch(Objects::nonNull))
                 break;
             int currentFlow = edges.stream().mapToInt(Edge::getWeight).min().orElse(0);
-            edges.forEach(edge -> edge.setWeight(0));
+            edges.forEach(edge -> edge.setWeight(edge.getWeight() - currentFlow));
             if (currentFlow <= 0)
                 break;
         }

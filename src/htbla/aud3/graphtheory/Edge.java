@@ -7,12 +7,14 @@ public class Edge {
     private Node from;
     private Node to;
     private int weight;
+    private final int oldWeight;
     public boolean valid = true;
 
     public Edge (Node from, Node to, int length){
         this.from = from;
         this.to = to;
         this.weight = length;
+        this.oldWeight = length;
     }
 
 
@@ -26,6 +28,9 @@ public class Edge {
 
     public int getWeight() {
         return weight;
+    }
+    public void resetWeight(){
+        weight = oldWeight;
     }
 
     public void setWeight(int weight) {
